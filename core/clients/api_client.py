@@ -77,11 +77,5 @@ class APIClient:
 
         with allure.step("Checking status code"):
             assert response.status_code == 200, f"Expected status code 200 but got {response.status_code}"
-        return print(response.json())
-
-
-# if __name__ == '__main__':
-#     client = APIClient()
-#     client.auth()
-#     client.get_booking_by_id("2")
+        return response.json()
 
