@@ -84,3 +84,4 @@ class APIClient:
 #     client = APIClient()
 #     client.auth()
 #     client.get_booking_by_id("2")
+
