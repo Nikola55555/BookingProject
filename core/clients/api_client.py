@@ -19,7 +19,6 @@ class APIClient:
             environment = Environment(environment_str).value
         except KeyError:
             raise ValueError(f"Unsupported environment value: {environment_str}")
-
         self.base_url = self.get_base_url(environment)
         self.session = requests.Session()
         self.session.headers = {
@@ -78,7 +77,6 @@ class APIClient:
             url = f"{self.base_url}{Endpoints.BOOKING_ENDPOINT.value}/{booking_id}"
             response = self.session.get(url)
             response.raise_for_status()
-
         with allure.step("Checking status code"):
             assert response.status_code == 200, f"Expected status code 200 but got {response.status_code}"
         return response.json()
@@ -113,10 +111,7 @@ class APIClient:
     def update_booking(self, booking_id, booking_data):
         with allure.step("Updating booking"):
             url = f"{self.base_url}{Endpoints.BOOKING_ENDPOINT.value}/{booking_id}"
-            headers = {
-                "Cookies": "token=abc123"
-            }
-            response = self.session.put(url, json=booking_data, headers=headers)
+            response = self.session.put(url, json=booking_data)
             response.raise_for_status()
         with allure.step("Checking status code"):
             assert response.status_code == 200, f"Expected status code 200 but got {response.status_code}"
@@ -125,10 +120,7 @@ class APIClient:
     def partial_update_booking(self, booking_id, booking_data):
         with allure.step(" Partial updating booking"):
             url = f"{self.base_url}{Endpoints.BOOKING_ENDPOINT.value}/{booking_id}"
-            headers = {
-                "Cookies": "token=abc123"
-            }
-            response = self.session.patch(url, json=booking_data, headers=headers)
-            response.raise_for_status()
+            response = self.session.patch(url, json=booking_data)
+        response.raise_for_status()
         with allure.step("Checking status code"):
             assert response.status_code == 200, f"Expected status code 200 but got {response.status_code}"
