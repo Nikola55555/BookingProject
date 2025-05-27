@@ -1,7 +1,7 @@
 import requests
 import os
 from dotenv import load_dotenv
-from requests import session
+from requests import Session
 from requests.auth import HTTPBasicAuth
 
 from core.settings.environments import Environment
@@ -14,12 +14,12 @@ load_dotenv()
 
 class APIClient:
     def __init__(self):
-        environment_str = os.getenv('ENVIRONMENT')
+        environment_str = os.getenv("Environment", "test")
         try:
-            environment = Environment(environment_str).value
+            self.environment = Environment(environment_str.lower())
         except KeyError:
-            raise ValueError(f"Unsupported environment value: {environment_str}")
-        self.base_url = self.get_base_url(environment)
+            raise ValueError(f"Unsupported environment value: {environment_str}. Use 'test' or 'production'")
+        self.base_url = self.get_base_url(self.environment)
         self.session = requests.Session()
         self.session.headers = {
             "Content-Type": "application/json",
@@ -27,23 +27,25 @@ class APIClient:
         }
 
     def get_base_url(self, environment: Environment) -> str:
-        if environment == Environment.TEST.value:
+        if environment == Environment.TEST:
             return os.getenv("TEST_BASE_URL")
-        elif environment == Environment.PROD.value:
+        elif environment == Environment.PROD:
             return os.getenv("PROD_BASE_URL")
         else:
             raise ValueError(f"Unsupported environment: {environment}")
 
     def get(self, endpoint, params=None, status_code=200):
-        url = self.get_base_url + endpoint
-        response = requests.get(url, params=params, headers=self.session.headers)
+        url = f"{self.base_url}{endpoint}"
+        response = self.session.get(url, params=params, headers=self.session.headers)
         if status_code:
             assert response.status_code == status_code
         return response.json()
 
     def post(self, endpoint, data=None, status_code=200):
-        url = self.get_base_url + endpoint
-        response = requests.post(url, json=data, headers=self.session.headers)
+        url = f"{self.base_url}{endpoint}"
+        response = self.session.post(url, json=data, headers=self.session.headers)
+        print(f"Actual status code: {response.status_code}")  # Проверка
+        print(f"Response body: {response.text}")  # Проверка
         if status_code:
             assert response.status_code == status_code
         return response.json()
