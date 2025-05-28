@@ -46,24 +46,3 @@ def generate_random_booking_data(booking_dates):
         "additionalneeds": additionalneeds
     }
     return data
-
-
-@pytest.fixture
-def generate_booking_data_without_required_field(booking_dates):
-    faker = Faker()
-    lastname = faker.last_name()
-    totalprice = faker.random_number(digits=3)
-    depositpaid = faker.boolean()
-    additionalneeds = faker.sentence()
-
-    data = {
-        "lastname": lastname,
-        "totalprice": totalprice,
-        "depositpaid": depositpaid,
-        "bookingdates": {
-            "checkin": booking_dates["checkin"],
-            "checkout": booking_dates["checkout"]
-        },
-        "additionalneeds": additionalneeds
-    }
-    return data
