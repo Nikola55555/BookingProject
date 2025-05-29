@@ -3,7 +3,6 @@ import os
 from dotenv import load_dotenv
 from requests import Session
 from requests.auth import HTTPBasicAuth
-
 from core.settings.environments import Environment
 from core.clients.endpoints import Endpoints
 from core.settings.config import Users, Timeouts
@@ -14,12 +13,12 @@ load_dotenv()
 
 class APIClient:
     def __init__(self):
-        environment_str = os.getenv("Environment", "test")
+        environment_str = os.getenv('ENVIRONMENT')
         try:
-            self.environment = Environment(environment_str.lower())
+            environment = Environment[environment_str]
         except KeyError:
-            raise ValueError(f"Unsupported environment value: {environment_str}. Use 'test' or 'production'")
-        self.base_url = self.get_base_url(self.environment)
+            raise ValueError(f"Unsupported environment value :{environment_str}")
+        self.base_url = self.get_base_url(environment)
         self.session = requests.Session()
         self.session.headers = {
             "Content-Type": "application/json",
@@ -48,7 +47,6 @@ class APIClient:
             assert response.status_code == status_code
             return response
 
-
     def ping(self):
         with allure.step("Ping api client"):
             url = f"{self.base_url}{Endpoints.PING_ENDPOINT.value}"
@@ -57,7 +55,6 @@ class APIClient:
         with allure.step("Assert status code"):
             assert response.status_code == 201, f"Expected status code 201 but got {response.status_code}"
         return response.status_code
-
 
     def auth(self):
         with allure.step("Getting authenticate"):
@@ -71,7 +68,6 @@ class APIClient:
         with allure.step("Updating header with authorization"):
             self.session.headers.update({"Authorization": f"Bearer {token}"})
 
-
     def get_booking_by_id(self, booking_id):
         with allure.step("Getting booking"):
             self.session.headers.update({
@@ -84,7 +80,6 @@ class APIClient:
             assert response.status_code == 200, f"Expected status code 200 but got {response.status_code}"
         return response.json()
 
-
     def delete_booking(self, booking_id):
         with allure.step("Deleting booking"):
             url = f"{self.base_url}{Endpoints.BOOKING_ENDPOINT.value}/{booking_id}"
@@ -93,7 +88,6 @@ class APIClient:
         with allure.step("Checking status code"):
             assert response.status_code == 201, f"Expected status code 200 but got {response.status_code}"
         return response.status_code == 201
-
 
     def create_booking(self, booking_data):
         with allure.step("Creating booking"):
@@ -104,7 +98,6 @@ class APIClient:
             assert response.status_code == 200, f"Expected status code 200 but got {response.status_code}"
         return response
 
-
     def get_booking_ids(self, param=None):
         with allure.step("Getting object with bookings"):
             url = f"{self.base_url}{Endpoints.BOOKING_ENDPOINT.value}"
@@ -114,7 +107,6 @@ class APIClient:
             assert response.status_code == 200, f"Expected status code 200 but got {response.status_code}"
         return response
 
-
     def update_booking(self, booking_id, booking_data):
         with allure.step("Updating booking"):
             url = f"{self.base_url}{Endpoints.BOOKING_ENDPOINT.value}/{booking_id}"
@@ -123,7 +115,6 @@ class APIClient:
         with allure.step("Checking status code"):
             assert response.status_code == 200, f"Expected status code 200 but got {response.status_code}"
         return response
-
 
     def partial_update_booking(self, booking_id, booking_data):
         with allure.step(" Partial updating booking"):

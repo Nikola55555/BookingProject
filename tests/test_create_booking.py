@@ -15,16 +15,14 @@ def test_create_booking_with_valid_data(api_client, generate_random_booking_data
         "firstname"], f"Expected {generate_random_booking_data["firstname"]} in data"
 
 
+@pytest.mark.parametrize("field_to_remove", ["firstname", "lastname", "totalprice", "depositpaid", "bookingdates"])
 @allure.feature("Test Create Booking")
 @allure.story("Test missing required fields")
-def test_missing_required_fields(api_client, generate_random_booking_data):
-    required_fields = ["firstname", "lastname", "totalprice", "depositpaid", "bookingdates"]
-    for field in required_fields:
-        with allure.step(f"Test without required field '{field}'"):
-            test_data = generate_random_booking_data.copy()
-            del test_data[field]
-            with pytest.raises(Exception, match="Internal Server Error"):
-                api_client.create_booking(test_data)
+def test_missing_required_fields(api_client, generate_random_booking_data, field_to_remove):
+    test_data = generate_random_booking_data
+    test_data.pop(field_to_remove)
+    with pytest.raises(Exception, match="Internal Server Error"):
+        api_client.create_booking(test_data)
 
 
 @allure.feature("Test Create Booking")
@@ -32,3 +30,12 @@ def test_missing_required_fields(api_client, generate_random_booking_data):
 def test_empty_body_request(api_client):
     with pytest.raises(Exception, match="Internal Server Error"):
         api_client.create_booking({})
+
+
+@allure.feature("Test Create Booking")
+@allure.story("Test numeric input in firstname field")
+def test_numeric_input_in_firstname_field(api_client, generate_random_booking_data):
+    test_data = generate_random_booking_data
+    test_data["firstname"] = 2
+    with pytest.raises(Exception, match="Internal Server Error"):
+        api_client.create_booking(test_data)
