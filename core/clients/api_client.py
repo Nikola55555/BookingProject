@@ -1,9 +1,8 @@
 import requests
 import os
 from dotenv import load_dotenv
-from requests import session
+from requests import Session
 from requests.auth import HTTPBasicAuth
-
 from core.settings.environments import Environment
 from core.clients.endpoints import Endpoints
 from core.settings.config import Users, Timeouts
@@ -16,9 +15,9 @@ class APIClient:
     def __init__(self):
         environment_str = os.getenv('ENVIRONMENT')
         try:
-            environment = Environment(environment_str).value
+            environment = Environment[environment_str]
         except KeyError:
-            raise ValueError(f"Unsupported environment value: {environment_str}")
+            raise ValueError(f"Unsupported environment value :{environment_str}")
         self.base_url = self.get_base_url(environment)
         self.session = requests.Session()
         self.session.headers = {
@@ -27,26 +26,26 @@ class APIClient:
         }
 
     def get_base_url(self, environment: Environment) -> str:
-        if environment == Environment.TEST.value:
+        if environment == Environment.TEST:
             return os.getenv("TEST_BASE_URL")
-        elif environment == Environment.PROD.value:
+        elif environment == Environment.PROD:
             return os.getenv("PROD_BASE_URL")
         else:
             raise ValueError(f"Unsupported environment: {environment}")
 
     def get(self, endpoint, params=None, status_code=200):
-        url = self.get_base_url + endpoint
-        response = requests.get(url, params=params, headers=self.session.headers)
+        url = f"{self.base_url}{endpoint}"
+        response = self.session.get(url, params=params, headers=self.session.headers)
         if status_code:
             assert response.status_code == status_code
         return response.json()
 
     def post(self, endpoint, data=None, status_code=200):
-        url = self.get_base_url + endpoint
-        response = requests.post(url, json=data, headers=self.session.headers)
+        url = f"{self.base_url}{endpoint}"
+        response = self.session.post(url, json=data, headers=self.session.headers)
         if status_code:
             assert response.status_code == status_code
-        return response.json()
+            return response
 
     def ping(self):
         with allure.step("Ping api client"):
@@ -97,7 +96,7 @@ class APIClient:
             response.raise_for_status()
         with allure.step("Checking status code"):
             assert response.status_code == 200, f"Expected status code 200 but got {response.status_code}"
-        return response.json()
+        return response
 
     def get_booking_ids(self, param=None):
         with allure.step("Getting object with bookings"):
@@ -106,7 +105,7 @@ class APIClient:
             response.raise_for_status()
         with allure.step("Checking status code"):
             assert response.status_code == 200, f"Expected status code 200 but got {response.status_code}"
-        return response.json()
+        return response
 
     def update_booking(self, booking_id, booking_data):
         with allure.step("Updating booking"):
@@ -115,7 +114,7 @@ class APIClient:
             response.raise_for_status()
         with allure.step("Checking status code"):
             assert response.status_code == 200, f"Expected status code 200 but got {response.status_code}"
-        return response.json()
+        return response
 
     def partial_update_booking(self, booking_id, booking_data):
         with allure.step(" Partial updating booking"):
