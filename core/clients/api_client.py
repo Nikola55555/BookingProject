@@ -1,7 +1,6 @@
 import requests
 import os
 from dotenv import load_dotenv
-from requests import Session
 from requests.auth import HTTPBasicAuth
 from core.settings.environments import Environment
 from core.clients.endpoints import Endpoints
